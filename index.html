@@ -599,9 +599,6 @@
         .user-info-value {
             font-weight: 500;
             word-break: break-word;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
         .detail-item {
@@ -783,7 +780,7 @@
             
             <div class="balance-container">
                 <div class="balance-item">
-                    <h3><i class="fas fa-coins"></i> Available Balance</h3>
+                    <h3><i class="fas fa-coins"></i> Balance</h3>
                     <p id="userBalance">0 ৳</p>
                 </div>
                 <div class="balance-item">
@@ -1023,7 +1020,7 @@
         // Load withdraw history from Realtime Database
         function loadWithdrawHistory() {
             realtimeDB.ref('withdraw_requests').orderByChild('timestamp').once('value')
-                .then((snapshot) {
+                .then((snapshot) => {
                     withdrawHistory = [];
                     snapshot.forEach((childSnapshot) => {
                         const request = childSnapshot.val();
@@ -1108,11 +1105,11 @@
                     <div class="user-info-grid">
                         <div class="user-info-item">
                             <span class="user-info-label"><i class="fas fa-user"></i> Full Name</span>
-                            <span class="user-info-value" title="${fullName || 'N/A'}">${fullName || 'N/A'}</span>
+                            <span class="user-info-value">${fullName || 'N/A'}</span>
                         </div>
                         <div class="user-info-item">
                             <span class="user-info-label"><i class="fas fa-at"></i> Username</span>
-                            <span class="user-info-value" title="${request.username}">${request.username}</span>
+                            <span class="user-info-value">${request.username}</span>
                         </div>
                     </div>
                     
@@ -1169,11 +1166,7 @@
                 const doc = await db.collection('users').doc(chatId).get();
                 if (doc.exists) {
                     const data = doc.data();
-                    // Combine first_name and last_name
-                    const firstName = data.first_name || '';
-                    const lastName = data.last_name || '';
-                    const fullName = `${firstName} ${lastName}`.trim();
-                    return fullName || 'N/A';
+                    return data.fullName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'N/A';
                 }
                 return 'N/A';
             } catch (error) {
