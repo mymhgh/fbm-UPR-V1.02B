@@ -1098,81 +1098,66 @@
             const formattedDate = date.toLocaleDateString();
             const formattedTime = date.toLocaleTimeString();
             
-            // Load user's full name from Firestore
-            loadUserFullName(request.chatId).then(fullName => {
-                const modalDetails = document.getElementById('modalDetails');
-                modalDetails.innerHTML = `
-                    <div class="user-info-grid">
-                        <div class="user-info-item">
-                            <span class="user-info-label"><i class="fas fa-user"></i> Full Name</span>
-                            <span class="user-info-value">${fullName || 'N/A'}</span>
+            // ইউজারের ফুলনাম লোড করুন (request থেকে সরাসরি)
+            const fullName = request.fullName || 'N/A';
+            
+            const modalDetails = document.getElementById('modalDetails');
+            modalDetails.innerHTML = `
+                <div class="user-info-grid">
+                    <div class="user-info-item">
+                        <span class="user-info-label"><i class="fas fa-user"></i> Full Name</span>
+                        <span class="user-info-value">${fullName}</span>
+                    </div>
+                    <div class="user-info-item">
+                        <span class="user-info-label"><i class="fas fa-at"></i> Username</span>
+                        <span class="user-info-value">${request.username}</span>
+                    </div>
+                </div>
+                
+                <div class="transaction-id-container">
+                    <span class="transaction-id" title="${request.id}">${request.id}</span>
+                    <button class="copy-btn" data-id="${request.id}">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-money-bill-wave"></i> Amount:</span>
+                    <span class="detail-value">${request.amount} ৳</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-calendar"></i> Date:</span>
+                    <span class="detail-value">${formattedDate}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-clock"></i> Time:</span>
+                    <span class="detail-value">${formattedTime}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-info-circle"></i> Status:</span>
+                    <span class="detail-value history-status status-${request.status}">${request.status}</span>
+                </div>
+                <div class="payment-methods-list">
+                    <h4><i class="fas fa-credit-card"></i> Payment Methods:</h4>
+                    ${request.paymentMethods.map(payment => `
+                        <div class="payment-method-item">
+                            <span>${payment.method}: <strong>${payment.number}</strong></span>
                         </div>
-                        <div class="user-info-item">
-                            <span class="user-info-label"><i class="fas fa-at"></i> Username</span>
-                            <span class="user-info-value">${request.username}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="transaction-id-container">
-                        <span class="transaction-id" title="${request.id}">${request.id}</span>
-                        <button class="copy-btn" data-id="${request.id}">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-money-bill-wave"></i> Amount:</span>
-                        <span class="detail-value">${request.amount} ৳</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-calendar"></i> Date:</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-clock"></i> Time:</span>
-                        <span class="detail-value">${formattedTime}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-info-circle"></i> Status:</span>
-                        <span class="detail-value history-status status-${request.status}">${request.status}</span>
-                    </div>
-                    <div class="payment-methods-list">
-                        <h4><i class="fas fa-credit-card"></i> Payment Methods:</h4>
-                        ${request.paymentMethods.map(payment => `
-                            <div class="payment-method-item">
-                                <span>${payment.method}: <strong>${payment.number}</strong></span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
+                    `).join('')}
+                </div>
+            `;
                 
                 // Add copy button event listener
-                const copyBtn = modalDetails.querySelector('.copy-btn');
-                copyBtn.addEventListener('click', function() {
-                    const transactionId = this.getAttribute('data-id');
-                    navigator.clipboard.writeText(transactionId).then(() => {
-                        showAlert('success', 'Copied!', 'Transaction ID copied to clipboard');
-                    });
+            const copyBtn = modalDetails.querySelector('.copy-btn');
+            copyBtn.addEventListener('click', function() {
+                const transactionId = this.getAttribute('data-id');
+                navigator.clipboard.writeText(transactionId).then(() => {
+                    showAlert('success', 'Copied!', 'Transaction ID copied to clipboard');
                 });
-                
-                // Show modal
-                document.getElementById('detailsModal').style.display = 'flex';
             });
-        }
-
-        // Load user's full name from Firestore
-        async function loadUserFullName(chatId) {
-            try {
-                const doc = await db.collection('users').doc(chatId).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    return data.fullName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'N/A';
-                }
-                return 'N/A';
-            } catch (error) {
-                console.error('Error loading user full name:', error);
-                return 'N/A';
-            }
+            
+            // Show modal
+            document.getElementById('detailsModal').style.display = 'flex';
         }
 
         // Close modal
@@ -1349,6 +1334,10 @@
             }
         }
 
+
+
+
+
         // Handle withdraw form submission
         function handleWithdrawSubmit(e) {
             e.preventDefault();
@@ -1371,11 +1360,12 @@
                 return;
             }
             
+            
             // Create withdrawal request
             createWithdrawRequest(amount);
         }
 
-        // Create withdraw request in Realtime Database
+       // Create withdraw request in Realtime Database - এই ফাংশনটি আপডেট করা হয়েছে
         function createWithdrawRequest(amount) {
             const requestId = realtimeDB.ref().child('withdraw_requests').push().key;
             const timestamp = Date.now();
@@ -1383,6 +1373,7 @@
             const requestData = {
                 chatId: userData.chatId,
                 username: userData.username,
+                fullName: userData.fullName, // ফুলনাম যোগ করা হয়েছে
                 amount: amount,
                 paymentMethods: savedPayments,
                 status: "pending",
