@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBM Withdraw System</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4bb543;
+            --error-color: #f44336;
+            --warning-color: #ff9800;
+            --border-radius: 12px;
+            --box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+        }
+
+        /* Header Profile Section */
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .profile-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid white;
+            margin: 0 auto 15px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .profile-img i {
+            font-size: 40px;
+            color: #888;
+        }
+
+        .profile-info h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+            margin: 0 auto;
+        }
+
+        .profile-info p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .balance-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .balance-item {
+            text-align: center;
+        }
+
+        .balance-item h3 {
+            font-size: 12px;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .balance-item p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Form Container */
+        .form-container {
+            padding: 25px;
+        }
+
+        .form-container h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        #withdrawForm {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            font-size: 15px;
+            transition: var(--transition);
+            background-color: var(--light-color);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.3);
+        }
+
+        input:read-only {
+            background-color: #f0f0f0;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* Amount Input with Max Button */
+        .amount-group {
+            position: relative;
+        }
+
+        #maxBalanceBtn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        #maxBalanceBtn:hover {
+            background: #3aa8d1;
+        }
+
+        /* Payment Methods Section */
+        .payment-method-container {
+            margin-top: 10px;
+        }
+
+        .payment-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .payment-input-group select {
+            flex: 1;
+        }
+
+        .payment-input-group input {
+            flex: 2;
+        }
+
+        #addPaymentBtn {
+            flex: 0 0 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        #addPaymentBtn:hover {
+            background: #3aa8d1;
+        }
+
+        .saved-payments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .saved-item {
+            display: flex;
+            align-items: center;
+            background: var(--light-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            gap: 8px;
+        }
+
+        .delete-btn {
+            background: var(--error-color);
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .delete-btn:hover {
+            background: #d32f2f;
+            transform: scale(1.1);
+        }
+
+        /* Submit Button */
+        #submitButton {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 15px;
+        }
+
+        #submitButton:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        #submitButton:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Mini Alert Style */
+        .mini-alert-popup {
+            font-size: 13px !important;
+            border-radius: 8px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+
+        .mini-alert-title {
+            font-size: 14px !important;
+            margin-bottom: 5px !important;
+        }
+
+        .mini-alert-icon {
+            width: 20px !important;
+            height: 20px !important;
+            font-size: 14px !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 576px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .profile-info h2 {
+                max-width: 200px;
+            }
+            
+            .payment-input-group {
+                flex-direction: column;
+            }
+            
+            #addPaymentBtn {
+                width: 100%;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header Profile Section -->
+        <div class="profile-header">
+            <div class="profile-img">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-info">
+                <h2 id="userFullName">Loading...</h2>
+                <p id="userUsername">@username</p>
+            </div>
+            <div class="balance-container">
+                <div class="balance-item">
+                    <h3>Balance</h3>
+                    <p id="userBalance">0 ৳</p>
+                </div>
+                <div class="balance-item">
+                    <h3>Total Withdraw</h3>
+                    <p id="userTotalWithdraw">0 ৳</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Withdraw Form Section -->
+        <div class="form-container">
+            <h2>Withdraw Request</h2>
+            <form id="withdrawForm">
+                <div class="form-group">
+                    <label for="chatId">User ID:</label>
+                    <input type="text" id="chatId" name="chatId" readonly required>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" readonly required>
+                </div>
+
+                <div class="form-group">
+                    <label for="withdrawAmount">Withdraw Amount:</label>
+                    <div class="amount-group">
+                        <input type="number" id="withdrawAmount" name="withdrawAmount" placeholder="Enter amount" min="1" required>
+                        <button type="button" id="maxBalanceBtn">MAX</button>
+                    </div>
+                </div>
+
+                <!-- Payment Methods Section -->
+                <div class="payment-method-container">
+                    <label>Payment Methods:</label>
+                    <div class="payment-input-group">
+                        <select id="paymentMethodSelect">
+                            <option value="">Select Method</option>
+                            <option value="Bkash">Bkash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Rocket">Rocket</option>
+                            <option value="Binance">Binance</option>
+                            <option value="Payeer">Payeer</option>
+                        </select>
+                        <input type="text" id="paymentNumberInput" placeholder="Enter number">
+                        <button type="button" id="addPaymentBtn"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="savedPayments" class="saved-payments">
+                        <!-- Saved payment methods will appear here -->
+                    </div>
+                </div>
+
+                <button type="submit" id="submitButton">Confirm Withdraw</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            // আপনার Firebase কনফিগারেশন এখানে যোগ করুন
+            apiKey: "YOUR_API_KEY",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "YOUR_APP_ID",
+            databaseURL: "https://your-project-default-rtdb.firebaseio.com/"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const realtimeDB = firebase.database();
+
+        // Global Variables
+        let tg = window.Telegram.WebApp;
+        let savedPayments = [];
+        let userData = {
+            chatId: '',
+            username: '',
+            fullName: '',
+            balance: 0,
+            totalWithdraw: 0
+        };
+
+        // Payment Methods Configuration
+        const paymentMethods = {
+            Bkash: { pattern: "^01[3-9][0-9]{8}$", placeholder: "01XXXXXXXXX", label: "Bkash Number" },
+            Nagad: { pattern: "^01[3-9][0-9]{8}$", placeholder: "01XXXXXXXXX", label: "Nagad Number" },
+            Rocket: { pattern: "^01[3-9][0-9]{8}$", placeholder: "01XXXXXXXXX", label: "Rocket Number" },
+            Binance: { pattern: "^\\d{6,11}$", placeholder: "ID1042457700", label: "Binance ID" },
+            Payeer: { pattern: "^P\\d{7,10}$", placeholder: "P1127766562", label: "Payeer ID" }
+        };
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+        });
+
+        // Initialize Telegram WebApp and Firebase
+        function initializeApp() {
+            // Telegram WebApp Expansion
+            tg.expand();
+            
+            // Get Telegram User Data
+            const tgUser = tg.initDataUnsafe.user;
+            if (tgUser) {
+                userData.chatId = tgUser.id.toString();
+                userData.username = tgUser.username || `user_${tgUser.id}`;
+                userData.fullName = `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim();
+                
+                // Update UI with Telegram user data
+                document.getElementById('chatId').value = userData.chatId;
+                document.getElementById('username').value = userData.username;
+                document.getElementById('userFullName').textContent = userData.fullName;
+                document.getElementById('userUsername').textContent = `@${userData.username}`;
+                
+                // Load user data from Firestore
+                loadUserData();
+            } else {
+                showAlert('error', 'Error', 'Telegram user data not available');
+            }
+        }
+
+        // Load user data from Firestore
+        function loadUserData() {
+            db.collection('users').doc(userData.chatId).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        userData.balance = data.balance || 0;
+                        userData.totalWithdraw = data.totalWithdraw || 0;
+                        
+                        // Update UI
+                        updateBalanceDisplay();
+                    } else {
+                        showAlert('warning', 'Notice', 'User profile not found');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error loading user data:', error);
+                    showAlert('error', 'Error', 'Failed to load user data');
+                });
+        }
+
+        // Update balance display
+        function updateBalanceDisplay() {
+            document.getElementById('userBalance').textContent = `${userData.balance} ৳`;
+            document.getElementById('userTotalWithdraw').textContent = `${userData.totalWithdraw} ৳`;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Payment method selection change
+            document.getElementById('paymentMethodSelect').addEventListener('change', function() {
+                updatePaymentInputPlaceholder();
+            });
+
+            // Add payment method button
+            document.getElementById('addPaymentBtn').addEventListener('click', addPaymentMethod);
+
+            // Max balance button
+            document.getElementById('maxBalanceBtn').addEventListener('click', setMaxBalance);
+
+            // Form submission
+            document.getElementById('withdrawForm').addEventListener('submit', handleWithdrawSubmit);
+
+            // Amount validation on input
+            document.getElementById('withdrawAmount').addEventListener('input', validateAmount);
+        }
+
+        // Update payment input placeholder based on selected method
+        function updatePaymentInputPlaceholder() {
+            const method = document.getElementById('paymentMethodSelect').value;
+            const input = document.getElementById('paymentNumberInput');
+            
+            if (paymentMethods[method]) {
+                input.placeholder = paymentMethods[method].placeholder;
+            } else {
+                input.placeholder = "Enter payment number";
+            }
+        }
+
+        // Add payment method
+        function addPaymentMethod() {
+            const methodSelect = document.getElementById('paymentMethodSelect');
+            const numberInput = document.getElementById('paymentNumberInput');
+            
+            const method = methodSelect.value;
+            const number = numberInput.value.trim();
+
+            // Validation
+            if (!method) {
+                showAlert('error', 'Required', 'Please select payment method');
+                return;
+            }
+
+            if (!number) {
+                showAlert('error', 'Required', 'Please enter payment number');
+                return;
+            }
+
+            const regex = new RegExp(paymentMethods[method].pattern);
+            if (!regex.test(number)) {
+                showAlert('warning', 'Invalid', `Please enter valid ${paymentMethods[method].label}`);
+                return;
+            }
+
+            // Check for duplicate
+            if (savedPayments.some(p => p.method === method && p.number === number)) {
+                showAlert('warning', 'Duplicate', 'This payment method is already added');
+                return;
+            }
+
+            // Add to saved payments
+            savedPayments.push({ method, number });
+            renderSavedPayments();
+            
+            // Reset inputs
+            methodSelect.value = "";
+            numberInput.value = "";
+            
+            showAlert('success', 'Added', 'Payment method added successfully');
+        }
+
+        // Render saved payments
+        function renderSavedPayments() {
+            const container = document.getElementById('savedPayments');
+            container.innerHTML = '';
+            
+            if (savedPayments.length === 0) {
+                container.innerHTML = '<div style="color: #666; font-style: italic;">No payment methods added</div>';
+                return;
+            }
+
+            savedPayments.forEach((payment, index) => {
+                const paymentEl = document.createElement('div');
+                paymentEl.className = 'saved-item';
+                paymentEl.innerHTML = `
+                    <span>${payment.method}: <strong>${payment.number}</strong></span>
+                    <div class="delete-btn" data-index="${index}">
+                        <i class="fas fa-times"></i>
+                    </div>
+                `;
+                container.appendChild(paymentEl);
+            });
+
+            // Add delete event listeners
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    savedPayments.splice(index, 1);
+                    renderSavedPayments();
+                    showAlert('success', 'Removed', 'Payment method removed');
+                });
+            });
+        }
+
+        // Set max balance
+        function setMaxBalance() {
+            document.getElementById('withdrawAmount').value = userData.balance;
+            validateAmount();
+        }
+
+        // Validate amount
+        function validateAmount() {
+            const amountInput = document.getElementById('withdrawAmount');
+            const amount = parseFloat(amountInput.value);
+            const submitButton = document.getElementById('submitButton');
+            
+            if (amount > userData.balance) {
+                amountInput.style.borderColor = 'var(--error-color)';
+                submitButton.disabled = true;
+                showAlert('warning', 'Insufficient Balance', 
+                         `You cannot withdraw more than your balance (${userData.balance} ৳)`);
+            } else if (amount <= 0) {
+                amountInput.style.borderColor = 'var(--error-color)';
+                submitButton.disabled = true;
+            } else {
+                amountInput.style.borderColor = '#e9ecef';
+                submitButton.disabled = false;
+            }
+        }
+
+        // Handle withdraw form submission
+        function handleWithdrawSubmit(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            
+            // Validations
+            if (savedPayments.length === 0) {
+                showAlert('error', 'Required', 'Please add at least one payment method');
+                return;
+            }
+            
+            if (amount > userData.balance) {
+                showAlert('error', 'Insufficient Balance', 'Withdrawal amount exceeds your balance');
+                return;
+            }
+            
+            if (amount <= 0) {
+                showAlert('error', 'Invalid Amount', 'Please enter a valid amount');
+                return;
+            }
+            
+            // Create withdrawal request
+            createWithdrawRequest(amount);
+        }
+
+        // Create withdraw request in Realtime Database
+        function createWithdrawRequest(amount) {
+            const requestId = realtimeDB.ref().child('withdraw_requests').push().key;
+            const timestamp = Date.now();
+            
+            const requestData = {
+                chatId: userData.chatId,
+                username: userData.username,
+                fullName: userData.fullName,
+                amount: amount,
+                paymentMethods: savedPayments,
+                status: "pending",
+                timestamp: timestamp,
+                processed: false
+            };
+            
+            // Save to Realtime Database
+            realtimeDB.ref('withdraw_requests/' + requestId).set(requestData)
+                .then(() => {
+                    // Update user balance in Firestore immediately
+                    updateUserBalance(amount);
+                    
+                    showAlert('success', 'Success', 'Withdrawal request submitted successfully!');
+                    
+                    // Reset form
+                    savedPayments = [];
+                    renderSavedPayments();
+                    document.getElementById('withdrawAmount').value = '';
+                })
+                .catch((error) => {
+                    console.error('Error saving withdrawal request:', error);
+                    showAlert('error', 'Error', 'Failed to submit withdrawal request');
+                });
+        }
+
+        // Update user balance in Firestore
+        function updateUserBalance(amount) {
+            const newBalance = userData.balance - amount;
+            const newTotalWithdraw = userData.totalWithdraw + amount;
+            
+            db.collection('users').doc(userData.chatId).update({
+                balance: newBalance,
+                totalWithdraw: newTotalWithdraw
+            })
+            .then(() => {
+                // Update local data
+                userData.balance = newBalance;
+                userData.totalWithdraw = newTotalWithdraw;
+                updateBalanceDisplay();
+            })
+            .catch((error) => {
+                console.error('Error updating user balance:', error);
+                showAlert('error', 'Error', 'Failed to update balance');
+            });
+        }
+
+        // Show alert function
+        function showAlert(icon, title, message) {
+            Swal.fire({
+                icon: icon,
+                title: title,
+                text: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'mini-alert-popup',
+                    title: 'mini-alert-title',
+                    icon: 'mini-alert-icon'
+                }
+            });
+        }
+    </script>
+</body>
+</html>
