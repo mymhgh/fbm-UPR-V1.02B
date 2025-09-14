@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fbm-UPR-V1.0.2B </title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        /* Mobile-First CSS with Updated Payment Method Section */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4361ee;
+            --success-color: #4bb543;
+            --error-color: #f44336;
+            --warning-color: #ff9800;
+            --info-color: #2196f3;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        /* Light Mode Variables (Default) */
+        [data-theme="light"] {
+            --bg-color: #c3cfe2;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --light-color: #f8f9fa;
+            --border-color: #ddd;
+            --input-bg: #f8f9fa;
+            --history-bg: #f9f9f9;
+            --balance-bg: linear-gradient(135deg, #4361ee, #4cc9f0);
+        }
+
+        /* Dark Mode Variables */
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #ffffff;
+            --light-color: #3d3d3d;
+            --border-color: #444;
+            --input-bg: #3a3a3a;
+            --history-bg: #2a2a2a;
+            --balance-bg: linear-gradient(135deg, #3f37c9, #4361ee);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        /* Block Overlay */
+        .block-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        }
+
+        .block-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: var(--box-shadow);
+        }
+
+        .block-icon {
+            font-size: 60px;
+            color: var(--error-color);
+            margin-bottom: 20px;
+        }
+
+        .block-title {
+            font-size: 24px;
+            color: var(--error-color);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .block-message {
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .block-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .block-btn {
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .block-btn.telegram {
+            background: #0088cc;
+        }
+
+        .block-btn.channel {
+            background: #ff0000;
+        }
+
+        .block-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Password Modal */
+        .password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9998;
+            backdrop-filter: blur(5px);
+        }
+
+        .password-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .password-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .password-icon {
+            font-size: 40px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .password-title {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .password-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .password-input-group {
+            margin-bottom: 15px;
+        }
+
+        .password-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .password-input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        .password-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .password-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Verification Modal Close Button */
+        .password-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .password-close-btn:hover {
+            transform: rotate(90deg);
+        }
+
+        /* Watermark Styles */
+        .watermark {
+            position: absolute;
+            opacity: 0.15;
+            font-size: 40px;
+            font-weight: bold;
+            color: var(--primary-color);
+            pointer-events: none;
+            z-index: 100;
+            transform: rotate(-45deg);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            white-space: nowrap;
+        }
+
+        /* Main Container */
+        .main-container {
+            width: 100%;
+            max-width: 550px;
+            position: relative;
+        }
+
+        /* Balance Section - Separate from form */
+        .balance-section {
+            background: var(--balance-bg);
+            color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            animation: slideDown 0.5s ease;
+            position: relative;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .balance-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        /* Theme Toggle - Inside Balance Section */
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .theme-toggle-btn {
+            font-size: 18px;
+            color: white;
+        }
+
+        .balance-container {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 15px;
+        }
+
+        .balance-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .balance-item h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .balance-item p {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Form Container */
+        .form-container {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.7s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-container h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* Form Elements - Mobile Layout */
+        #withdrawForm {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* User ID & Username - Side by Side */
+        .row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .field {
+            flex: 1;
+            min-width: calc(50% - 10px);
+        }
+
+        /* Amount Input with Max Button */
+        .amount-group {
+            position: relative;
+            width: 100%;
+        }
+
+        #maxBalanceBtn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        #maxBalanceBtn:hover {
+            background: #3aa8d1;
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.3);
+        }
+
+        input:read-only {
+            background-color: var(--light-color);
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        /* Updated Payment Method Section */
+        .payment-method-container {
+            margin-top: 10px;
+        }
+
+        .payment-input-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        /* Smaller Select Box */
+        .payment-input-group select {
+            flex: 0 0 80px;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        /* Larger Number Input */
+        .payment-input-group input {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        /* Icon-sized Add Button */
+        #addPaymentBtn {
+            flex: 0 0 40px;
+            width: 35px;
+            height: 35px;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15%;
+            font-size: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        #addPaymentBtn:hover {
+            background-color: #2196f3;
+            transform: rotate(90deg);
+        }
+
+        .saved-payments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .saved-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 10px;
+            background-color: var(--light-color);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .saved-item:hover {
+            background-color: var(--input-bg);
+            transform: translateX(2px);
+        }
+
+        .saved-item span {
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        /* Buttons */
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        #submitButton {
+            width: 100%;
+            margin-top: 5px;
+            background-color: var(--success-color);
+        }
+
+        #submitButton:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Withdraw History Section */
+        .history-section {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .history-section h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .search-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .search-container input {
+            padding-left: 40px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: var(--history-bg);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .history-timestamp {
+            font-size: 12px;
+            color: #888;
+            background: var(--light-color);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-family: monospace;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-amount {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        .history-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .history-date {
+            color: #888;
+        }
+
+        .history-status {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .history-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .details-btn {
+            background: var(--info-color);
+            padding: 6px 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Details Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--box-shadow);
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .modal-header h3 {
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-btn {
+            background: var(--error-color);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            transform: rotate(90deg);
+        }
+
+        .modal-details {
+            margin-bottom: 20px;
+        }
+
+        .user-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .user-info-value {
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .detail-value {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .transaction-id-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--light-color);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+
+        .transaction-id {
+            font-family: monospace;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .copy-btn {
+            background: var(--info-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            opacity: 0.9;
+        }
+
+        .payment-methods-list {
+            margin-top: 15px;
+        }
+
+        .payment-method-item {
+            background: var(--light-color);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ডিলিট বাটন স্টাইল */
+        .delete-btn {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background-color: #c62828;
+            transform: scale(1.1);
+        }
+
+        .delete-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* মিনি অ্যালার্ট স্টাইল */
+        .mini-alert-popup {
+            font-size: 13px !important;
+            border-radius: 8px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+
+        .mini-alert-title {
+            font-size: 14px !important;
+            margin-bottom: 5px !important;
+        }
+
+        .mini-alert-icon {
+            width: 20px !important;
+            height: 20px !important;
+            font-size: 14px !important;
+        }
+
+        .swal2-timer-progress-bar {
+            height: 2px !important;
+        }
+
+        /* Desktop Styles */
+        @media (min-width: 768px) {
+            .form-container {
+                padding: 25px;
+            }
+            
+            .form-container h2 {
+                font-size: 26px;
+            }
+            
+            input, select {
+                padding: 12px 14px;
+                font-size: 15px;
+            }
+            
+            label {
+                font-size: 15px;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+    </style>
+
+    <style>
+        /* নাম ওভারফ্লো সুরক্ষার জন্য অতিরিক্ত স্টাইল */
+        .user-info-value {
+            font-weight: 300; /* 500 */
+            word-break: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.4;
+            max-height: 2.8em;
+        }
+
+        .history-timestamp {
+            font-size: 12px;
+            color: #888;
+            background: var(--light-color);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-family: monospace;
+            max-width: 50px; /* 120 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .transaction-id {
+            font-family: monospace;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            margin-right: 10px;
+            display: inline-block;
+            max-width: 50%; /* 70% */
+        }
+
+        /* মোবাইল ডিভাইসের জন্য রেসপন্সিভ স্টাইল */
+        @media (max-width: 480px) {
+            .user-info-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px;
+            }
+            
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .history-timestamp {
+                max-width: 100%;
+            }
+        }
+
+        /* মডাল কন্টেন্টের স্ক্রলেবল করা */
+        .modal-content {
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+
+        /* পেমেন্ট মেথড আইটেমের জন্য ওভারফ্লো প্রোটেকশন */
+        .payment-method-item span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 85%;
+        }
+    </style>
+    
+</head>
+
+<body data-theme="light">
+    <!-- Block Overlay -->
+    <div class="block-overlay" id="blockOverlay" style="display: none;">
+        <div class="block-container">
+            <div class="block-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+            <h2 class="block-title">Account Blocked</h2>
+            <p class="block-message">Your account has been blocked. You cannot use our services. Please contact support to unblock your account.</p>
+            <div class="block-buttons">
+                <a href="https://t.me/your_support_group" class="block-btn telegram" target="_blank">
+                    <i class="fab fa-telegram"></i> Telegram Group
+                </a>
+                <a href="https://t.me/your_channel" class="block-btn channel" target="_blank">
+                    <i class="fab fa-telegram"></i> Telegram Channel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Setup Modal -->
+    <div class="password-modal" id="passwordSetupModal" style="display: none;">
+        <div class="password-container">
+            <div class="password-header">
+                <div class="password-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="password-title">Set Your Password</h3>
+                <p class="password-subtitle">Please set a 6-digit numeric password for security</p>
+            </div>
+            <form id="passwordSetupForm">
+                <div class="password-input-group">
+                    <label for="newPassword">New Password (6 digits)</label>
+                    <input type="password" id="newPassword" maxlength="6" pattern="[0-9]{6}" required placeholder="Enter 6-digit password">
+                </div>
+                <div class="password-input-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" maxlength="6" pattern="[0-9]{6}" required placeholder="Confirm 6-digit password">
+                </div>
+                <button type="submit" class="password-btn">
+                    <i class="fas fa-save"></i> Save Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Password Verification Modal -->
+    <div class="password-modal" id="passwordVerifyModal" style="display: none;">
+        <div class="password-container">
+            <!-- Close Button for Verification Modal Only -->
+            <button class="password-close-btn" id="closeVerifyModal">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="password-header">
+                <div class="password-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="password-title">Verify Password</h3>
+                <p class="password-subtitle">Please enter your password to confirm withdrawal</p>
+            </div>
+            <form id="passwordVerifyForm">
+                <div class="password-input-group">
+                    <label for="verifyPassword">Password</label>
+                    <input type="password" id="verifyPassword" maxlength="6" pattern="[0-9]{6}" required placeholder="Enter your 6-digit password">
+                </div>
+                <button type="submit" class="password-btn" id="verifySubmitBtn">
+                    <i class="fas fa-check"></i> Confirm Withdrawal
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Balance Section - Separate from form -->
+        <div class="balance-section">
+            <h2><i class="fas fa-wallet"></i> Account Summary</h2>
+            
+            <!-- Theme Toggle - Inside Balance Section -->
+            <div class="theme-toggle" id="themeToggle">
+                <div class="theme-toggle-btn">
+                    <i class="fas fa-sun" id="themeIcon"></i>
+                </div>
+            </div>
+            
+            <div class="balance-container">
+                <div class="balance-item">
+                    <h3><i class="fas fa-coins"></i> Balance</h3>
+                    <p id="userBalance">0 ৳</p>
+                </div>
+                <div class="balance-item">
+                    <h3><i class="fas fa-hand-holding-usd"></i> Total Withdraw</h3>
+                    <p id="userTotalWithdraw">0 ৳</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Container Section -->
+        <div class="form-container">
+            <!--   <h2><i class="fas fa-money-bill-wave"></i> Withdraw Request</h2> -->
+            
+            <!-- Start of the withdraw form -->
+            <form id="withdrawForm">
+                <!-- Row for Chat ID and Username -->
+                <div class="row">
+                    <!-- Chat ID Field -->
+                    <div class="field">
+                        <label for="chatId"><i class="fas fa-id-card"></i> User ID:</label>
+                        <input type="text" id="chatId" name="chatId" placeholder="User ID" readonly required> 
+                    </div>
+
+                    <!-- Username Field -->
+                    <div class="field">
+                        <label for="username"><i class="fas fa-user"></i> Username:</label>
+                        <input type="text" id="username" name="username" placeholder="Username" readonly required>
+                    </div>
+                </div>
+
+                <!-- Withdraw Amount Field -->
+                <div class="field">
+                    <label for="withdrawAmount"><i class="fas fa-money-bill"></i> Withdraw Amount:</label>
+                    <div class="amount-group">
+                        <input type="number" id="withdrawAmount" name="withdrawAmount" placeholder="Enter amount" min="1" required>
+                        <button type="button" id="maxBalanceBtn">MAX</button>
+                    </div>
+                </div>
+
+                <!-- Payment Methods Section -->
+                <div class="payment-method-container">
+                    <label><i class="fas fa-credit-card"></i> Payment Methods:</label>
+                    <div class="payment-input-group">
+                        <select id="paymentMethodSelect">
+                            <option value="">Select Method</option>
+                            <option value="Bkash">Bkash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Rocket">Rocket</option>
+                            <option value="Binance">Binance</option>
+                            <option value="Payeer">Payeer</option>
+                        </select>
+                        <input type="text" id="paymentNumberInput" placeholder="Enter number">
+                        <button type="button" id="addPaymentBtn"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div id="savedPayments" class="saved-payments">
+                        <!-- সেভ করা পেমেন্ট মেথডগুলো এখানে শো হবে -->
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" id="submitButton"><i class="fas fa-paper-plane"></i> Confirm Withdrawal</button>
+            </form>
+        </div>
+
+        <!-- Withdraw History Section -->
+        <div class="history-section">
+            <h2><i class="fas fa-history"></i> Withdraw History</h2>
+            
+            <!-- Search Option - Real-time -->
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search by transaction ID...">
+            </div>
+            
+            <!-- History List -->
+            <div class="history-list" id="historyList">
+                <!-- History items will be loaded here -->
+                <div class="no-history">No withdrawal history found</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> Transaction Details</h3>
+                <div class="close-btn" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-details" id="modalDetails">
+                <!-- Details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 🔥 Firebase Configuration ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCs6ePkTxvMjcERh6yAdvjPqxIu6X7jhRM",
+            authDomain: "fbm-market-bot.firebaseapp.com",
+            databaseURL: "https://fbm-market-bot-default-rtdb.firebaseio.com",
+            projectId: "fbm-market-bot",
+            storageBucket: "fbm-market-bot.firebasestorage.app",
+            messagingSenderId: "711610016805",
+            appId: "1:711610016805:web:c5a019c9af1485ac984bcc"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const realtimeDB = firebase.database();
+
+        // ==================== 📌 টেলিগ্রাম বট API কনফিগারেশন ====================
+        // আপনার বটের টোকেন এখানে replace করুন: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+        const BOT_TOKEN = "7673657711:AAG9aHlpI8_Egvwi0fY9rxA4qyEfqOw16nU";
+
+        // 📌 প্রাইভেট চ্যানেল/গ্রুপ আইডি (যেখানে notifications যাবে)
+        // নেগেটিভ আইডি = গ্রুপ/চ্যানেল, পজিটিভ আইডি = ইউজার
+        const ADMIN_CHANNEL_ID = "-1003098627237"; // আপনার চ্যানেল আইডি দিন
+
+        // 📌 বট API URL
+        const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+        // ========================================================================
+
+        // Global Variables
+        let tg = window.Telegram.WebApp;
+        let savedPayments = [];
+        let userData = {
+            chatId: '',
+            username: '',
+            fullName: '',
+            balance: 0,
+            totalWithdraw: 0,
+            isBlocked: false,
+            password: '',
+            wrongPasswordAttempts: 0
+        };
+        let withdrawHistory = [];
+        let currentWithdrawAmount = 0;
+
+        // Payment Methods Configuration
+        const paymentMethods = {
+            Bkash: { pattern: "^01[3-9][0-9]{8}$", placeholder: "01XXXXXXXXX", label: "Bkash Number" },
+            Nagad: { pattern: "^01[3-9][0-9]{8}$", placeholder: "01XXXXXXXXX", label: "Nagad Number" },
+            Rocket: { pattern: "^01[3-9][0-9]{8}$", placeholder: "01XXXXXXXXX", label: "Rocket Number" },
+            Binance: { pattern: "^\\d{6,11}$", placeholder: "ID1042457700", label: "Binance ID" },
+            Payeer: { pattern: "^P\\d{7,10}$", placeholder: "P1127766562", label: "Payeer ID" }
+        };
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        // Theme Toggle Functionality
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.body;
+            
+            // Use light theme as default
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            body.setAttribute('data-theme', savedTheme);
+            
+            // Update icon based on current theme
+            if (savedTheme === 'dark') {
+                themeIcon.className = 'fas fa-moon';
+            } else {
+                themeIcon.className = 'fas fa-sun';
+            }
+            
+            // Toggle theme on button click
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = body.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                // Update icon
+                if (newTheme === 'dark') {
+                    themeIcon.className = 'fas fa-moon';
+                } else {
+                    themeIcon.className = 'fas fa-sun';
+                }
+            });
+        }
+
+        // Initialize Telegram WebApp and Firebase
+        function initializeApp() {
+            // Telegram WebApp Expansion
+            if (tg && tg.expand) {
+                tg.expand();
+            }
+            
+            // Get Telegram User Data
+            let tgUser = null;
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                tgUser = tg.initDataUnsafe.user;
+            }
+            
+            // Fallback for testing outside Telegram
+            if (!tgUser) {
+                tgUser = {
+                    id: "123456789",
+                    username: "test_user",
+                    first_name: "Test",
+                    last_name: "User"
+                };
+                showAlert('warning', 'Demo Mode', 'Running in demo mode without Telegram');
+            }
+            
+            userData.chatId = tgUser.id.toString();
+            userData.username = tgUser.username || `user_${tgUser.id}`;
+            userData.fullName = `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim();
+            
+            // Update UI with Telegram user data
+            document.getElementById('chatId').value = userData.chatId;
+            document.getElementById('username').value = userData.username;
+            
+            // Load user data from Firestore and check block status
+            loadUserData();
+        }
+
+        // Load user data from Firestore
+        function loadUserData() {
+            db.collection('users').doc(userData.chatId).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        userData.balance = data.balance || 0;
+                        userData.totalWithdraw = data.totalWithdraw || 0;
+                        userData.isBlocked = data.isBlocked || false;
+                        userData.password = data.password || '';
+                        userData.wrongPasswordAttempts = data.wrongPasswordAttempts || 0;
+                        
+                        // Check if user is blocked
+                        if (userData.isBlocked) {
+                            showBlockOverlay();
+                            return;
+                        }
+                        
+                        // Update balance display
+                        document.getElementById('userBalance').textContent = `${userData.balance} ৳`;
+                        document.getElementById('userTotalWithdraw').textContent = `${userData.totalWithdraw} ৳`;
+                        
+                        // Check if password is set
+                        if (!userData.password) {
+                            // Show password setup modal after 3 seconds
+                            setTimeout(showPasswordSetupModal, 3000);
+                        } else {
+                            // User has password, setup the app normally
+                            setupAppAfterVerification();
+                        }
+                    } else {
+                        // User doesn't exist, create new user
+                        createNewUser();
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error loading user data:', error);
+                    showAlert('error', 'Error', 'Failed to load user data');
+                });
+        }
+
+        // Create new user in Firestore
+        function createNewUser() {
+            const userRef = db.collection('users').doc(userData.chatId);
+            
+            userRef.set({
+                chatId: userData.chatId,
+                username: userData.username,
+                fullName: userData.fullName,
+                balance: 0,
+                totalWithdraw: 0,
+                isBlocked: false,
+                password: '',
+                wrongPasswordAttempts: 0,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                // Show password setup modal after 3 seconds
+                setTimeout(showPasswordSetupModal, 3000);
+            })
+            .catch((error) => {
+                console.error('Error creating user:', error);
+                showAlert('error', 'Error', 'Failed to create user profile');
+            });
+        }
+
+        // Show block overlay
+        function showBlockOverlay() {
+            document.getElementById('blockOverlay').style.display = 'flex';
+            // Disable all form elements
+            document.getElementById('withdrawForm').querySelectorAll('input, select, button').forEach(el => {
+                el.disabled = true;
+            });
+        }
+
+        // Show password setup modal
+        function showPasswordSetupModal() {
+            // Only show if user is not blocked and doesn't have password
+            if (!userData.isBlocked && !userData.password) {
+                document.getElementById('passwordSetupModal').style.display = 'flex';
+                
+                // Setup password form validation
+                setupPasswordForm();
+            }
+        }
+
+        // Setup password form validation
+        function setupPasswordForm() {
+            const form = document.getElementById('passwordSetupForm');
+            const newPassword = document.getElementById('newPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (newPassword.value.length !== 6 || !/^\d+$/.test(newPassword.value)) {
+                    showAlert('error', 'Invalid Password', 'Password must be exactly 6 digits');
+                    return;
+                }
+                
+                if (newPassword.value !== confirmPassword.value) {
+                    showAlert('error', 'Password Mismatch', 'Passwords do not match');
+                    return;
+                }
+                
+                // Save password to Firestore
+                savePassword(newPassword.value);
+            });
+        }
+
+        // Save password to Firestore
+        function savePassword(password) {
+            db.collection('users').doc(userData.chatId).update({
+                password: password,
+                wrongPasswordAttempts: 0
+            })
+            .then(() => {
+                userData.password = password;
+                userData.wrongPasswordAttempts = 0;
+                
+                // Hide password modal
+                document.getElementById('passwordSetupModal').style.display = 'none';
+                
+                // Setup the app normally
+                setupAppAfterVerification();
+                
+                showAlert('success', 'Success', 'Password set successfully');
+            })
+            .catch((error) => {
+                console.error('Error saving password:', error);
+                showAlert('error', 'Error', 'Failed to save password');
+            });
+        }
+
+        // Setup app after password verification
+        function setupAppAfterVerification() {
+            setupEventListeners();
+            setupThemeToggle();
+            loadWithdrawHistory();
+        }
+
+        // Show password verification modal
+        function showPasswordVerifyModal(amount) {
+            currentWithdrawAmount = amount;
+            document.getElementById('passwordVerifyModal').style.display = 'flex';
+            
+            // Reset password field
+            document.getElementById('verifyPassword').value = '';
+            
+            // Setup verification form
+            const form = document.getElementById('passwordVerifyForm');
+            
+            // Remove any existing event listeners
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+            
+            // Add close button event listener
+            document.getElementById('closeVerifyModal').addEventListener('click', function() {
+                document.getElementById('passwordVerifyModal').style.display = 'none';
+            });
+            
+            // Add form submit event listener
+            document.getElementById('passwordVerifyForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const enteredPassword = document.getElementById('verifyPassword').value;
+                
+                if (enteredPassword === userData.password) {
+                    // Correct password - show progress button
+                    const verifyBtn = document.getElementById('verifySubmitBtn');
+                    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                    verifyBtn.disabled = true;
+                    
+                    // Simulate 2.5 second processing time
+                    setTimeout(() => {
+                        document.getElementById('passwordVerifyModal').style.display = 'none';
+                        userData.wrongPasswordAttempts = 0;
+                        
+                        // Update wrong attempts count
+                        db.collection('users').doc(userData.chatId).update({
+                            wrongPasswordAttempts: 0
+                        });
+                        
+                        // Proceed with withdrawal
+                        createWithdrawRequest(currentWithdrawAmount);
+                    }, 2500);
+                } else {
+                    // Wrong password
+                    userData.wrongPasswordAttempts++;
+                    
+                    // Update wrong attempts count
+                    db.collection('users').doc(userData.chatId).update({
+                        wrongPasswordAttempts: userData.wrongPasswordAttempts
+                    });
+                    
+                    if (userData.wrongPasswordAttempts >= 3) {
+                        // Block user after 3 wrong attempts
+                        blockUser();
+                        document.getElementById('passwordVerifyModal').style.display = 'none';
+                    } else {
+                        showAlert('error', 'Wrong Password', 
+                            `Incorrect password. ${3 - userData.wrongPasswordAttempts} attempts remaining`);
+                    }
+                }
+            });
+        }
+
+        // Block user
+        function blockUser() {
+            db.collection('users').doc(userData.chatId).update({
+                isBlocked: true
+            })
+            .then(() => {
+                userData.isBlocked = true;
+                showBlockOverlay();
+                showAlert('error', 'Account Blocked', 'Your account has been blocked due to multiple wrong password attempts');
+            })
+            .catch((error) => {
+                console.error('Error blocking user:', error);
+            });
+        }
+
+        // Load withdraw history from Realtime Database
+        function loadWithdrawHistory() {
+            realtimeDB.ref('withdraw_requests').orderByChild('timestamp').once('value')
+                .then((snapshot) => {
+                    withdrawHistory = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const request = childSnapshot.val();
+                        if (request.chatId === userData.chatId) {
+                            request.id = childSnapshot.key;
+                            withdrawHistory.push(request);
+                        }
+                    });
+                    
+                    // Sort by timestamp descending (newest first)
+                    withdrawHistory.sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    // Render history
+                    renderWithdrawHistory();
+                })
+                .catch((error) => {
+                    console.error('Error loading withdraw history:', error);
+                    showAlert('error', 'Error', 'Failed to load withdrawal history');
+                });
+        }
+
+        // Render withdraw history
+        function renderWithdrawHistory(filteredHistory = null) {
+            const historyList = document.getElementById('historyList');
+            const historyToRender = filteredHistory || withdrawHistory;
+            
+            if (historyToRender.length === 0) {
+                historyList.innerHTML = '<div class="no-history" style="text-align: center; padding: 20px; color: #888;">No withdrawal history found</div>';
+                return;
+            }
+            
+            historyList.innerHTML = '';
+            
+            historyToRender.forEach((request) => {
+                const date = new Date(request.timestamp);
+                const formattedDate = date.toLocaleDateString();
+                const formattedTime = date.toLocaleTimeString();
+                
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-header">
+                        <span class="history-timestamp" title="${request.id}"><i class="fas fa-hashtag"></i> ${request.id.substring(0, 8)}...</span>
+                        <span class="history-amount"><i class="fas fa-money-bill-wave"></i> ${request.amount} ৳</span>
+                    </div>
+                    <div class="history-details">
+                        <span class="history-date"><i class="fas fa-calendar"></i> ${formattedDate} ${formattedTime}</span>
+                        <span class="history-status status-${request.status}">${request.status}</span>
+                    </div>
+                    <div class="history-actions">
+                        <button class="details-btn" data-id="${request.id}">
+                            <i class="fas fa-eye"></i> Details
+                        </button>
+                    </div>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+            
+            // Add event listeners to details buttons
+            document.querySelectorAll('.details-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const requestId = this.getAttribute('data-id');
+                    showRequestDetails(requestId);
+                });
+            });
+        }
+
+        // Show request details in modal
+        function showRequestDetails(requestId) {
+            const request = withdrawHistory.find(r => r.id === requestId);
+            if (!request) return;
+            
+            const date = new Date(request.timestamp);
+            const formattedDate = date.toLocaleDateString();
+            const formattedTime = date.toLocaleTimeString();
+            
+            // ইউজারের ফুলনাম লোড করুন (request থেকে সরাসরি)
+            const fullName = request.fullName || 'N/A';
+            
+            const modalDetails = document.getElementById('modalDetails');
+            modalDetails.innerHTML = `
+                <div class="user-info-grid">
+                    <div class="user-info-item">
+                        <span class="user-info-label"><i class="fas fa-user"></i> Full Name</span>
+                        <span class="user-info-value">${fullName}</span>
+                    </div>
+                    <div class="user-info-item">
+                        <span class="user-info-label"><i class="fas fa-at"></i> Username</span>
+                        <span class="user-info-value">${request.username}</span>
+                    </div>
+                </div>
+                
+                <div class="transaction-id-container">
+                    <span class="transaction-id" title="${request.id}">${request.id}</span>
+                    <button class="copy-btn" data-id="${request.id}">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-money-bill-wave"></i> Amount:</span>
+                    <span class="detail-value">${request.amount} ৳</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-calendar"></i> Date:</span>
+                    <span class="detail-value">${formattedDate}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-clock"></i> Time:</span>
+                    <span class="detail-value">${formattedTime}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-info-circle"></i> Status:</span>
+                    <span class="detail-value history-status status-${request.status}">${request.status}</span>
+                </div>
+                <div class="payment-methods-list">
+                    <h4><i class="fas fa-credit-card"></i> Payment Methods:</h4>
+                    ${request.paymentMethods.map(payment => `
+                        <div class="payment-method-item">
+                            <span>${payment.method}: <strong>${payment.number}</strong></span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Add watermark for approved/rejected status
+            if (request.status === 'approved' || request.status === 'rejected') {
+                const watermark = document.createElement('div');
+                watermark.className = 'watermark';
+                watermark.textContent = request.status.toUpperCase();
+                modalDetails.appendChild(watermark);
+            }
+                
+            // Add copy button event listener
+            const copyBtn = modalDetails.querySelector('.copy-btn');
+            copyBtn.addEventListener('click', function() {
+                const transactionId = this.getAttribute('data-id');
+                navigator.clipboard.writeText(transactionId).then(() => {
+                    showAlert('success', 'Copied!', 'Transaction ID copied to clipboard');
+                });
+            });
+            
+            // Show modal
+            document.getElementById('detailsModal').style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+        }
+
+        // Real-time search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.trim().toLowerCase();
+                
+                if (!searchTerm) {
+                    renderWithdrawHistory();
+                    return;
+                }
+                
+                const filteredHistory = withdrawHistory.filter(request => 
+                    request.id.toLowerCase().includes(searchTerm)
+                );
+                
+                renderWithdrawHistory(filteredHistory);
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Payment method selection change
+            document.getElementById('paymentMethodSelect').addEventListener('change', function() {
+                updatePaymentInputPlaceholder();
+            });
+
+            // Add payment method button
+            document.getElementById('addPaymentBtn').addEventListener('click', addPaymentMethod);
+
+            // Max balance button
+            document.getElementById('maxBalanceBtn').addEventListener('click', setMaxBalance);
+
+            // Form submission
+            document.getElementById('withdrawForm').addEventListener('submit', handleWithdrawSubmit);
+
+            // Amount validation on input
+            document.getElementById('withdrawAmount').addEventListener('input', validateAmount);
+
+            // Real-time search
+            setupSearch();
+
+            // Close modal button
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+
+            // Close modal when clicking outside
+            document.getElementById('detailsModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Update payment input placeholder based on selected method
+        function updatePaymentInputPlaceholder() {
+            const method = document.getElementById('paymentMethodSelect').value;
+            const input = document.getElementById('paymentNumberInput');
+            
+            if (paymentMethods[method]) {
+                input.placeholder = paymentMethods[method].placeholder;
+            } else {
+                input.placeholder = "Enter payment number";
+            }
+        }
+
+        // Add payment method
+        function addPaymentMethod() {
+            const methodSelect = document.getElementById('paymentMethodSelect');
+            const numberInput = document.getElementById('paymentNumberInput');
+            
+            const method = methodSelect.value;
+            const number = numberInput.value.trim();
+
+            // Validation
+            if (!method) {
+                showAlert('error', 'Required', 'Please select payment method');
+                return;
+            }
+
+            if (!number) {
+                showAlert('error', 'Required', 'Please enter payment number');
+                return;
+            }
+
+            const regex = new RegExp(paymentMethods[method].pattern);
+            if (!regex.test(number)) {
+                showAlert('warning', 'Invalid', `Please enter valid ${paymentMethods[method].label}`);
+                return;
+            }
+
+            // Check for duplicate
+            if (savedPayments.some(p => p.method === method && p.number === number)) {
+                showAlert('warning', 'Duplicate', 'This payment method is already added');
+                return;
+            }
+
+            // Add to saved payments
+            savedPayments.push({ method, number });
+            renderSavedPayments();
+            
+            // Reset inputs
+            methodSelect.value = "";
+            numberInput.value = "";
+            
+            showAlert('success', 'Added', 'Payment method added successfully');
+        }
+
+        // Render saved payments
+        function renderSavedPayments() {
+            const container = document.getElementById('savedPayments');
+            container.innerHTML = '';
+            
+            if (savedPayments.length === 0) {
+                container.innerHTML = '<div style="color: #666; font-style: italic; padding: 5px;">No payment methods added yet</div>';
+                return;
+            }
+
+            savedPayments.forEach((payment, index) => {
+                const paymentEl = document.createElement('div');
+                paymentEl.className = 'saved-item';
+                paymentEl.innerHTML = `
+                    <span>${payment.method}: <strong>${payment.number}</strong></span>
+                    <button class="delete-btn" data-index="${index}" title="Delete">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                container.appendChild(paymentEl);
+            });
+
+            // Add delete event listeners
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    savedPayments.splice(index, 1);
+                    renderSavedPayments();
+                    showAlert('success', 'Removed', 'Payment method deleted');
+                });
+            });
+        }
+
+        // Set max balance
+        function setMaxBalance() {
+            document.getElementById('withdrawAmount').value = userData.balance;
+            validateAmount();
+        }
+
+        // Validate amount
+        function validateAmount() {
+            const amountInput = document.getElementById('withdrawAmount');
+            const amount = parseFloat(amountInput.value);
+            const submitButton = document.getElementById('submitButton');
+            
+            if (isNaN(amount) || amount <= 0) {
+                amountInput.style.borderColor = 'var(--error-color)';
+                submitButton.disabled = true;
+                return;
+            }
+            
+            if (amount > userData.balance) {
+                amountInput.style.borderColor = 'var(--error-color)';
+                submitButton.disabled = true;
+                showAlert('warning', 'Insufficient Balance', 
+                         `You cannot withdraw more than your balance (${userData.balance} ৳)`);
+            } else {
+                amountInput.style.borderColor = 'var(--border-color)';
+                submitButton.disabled = false;
+            }
+        }
+
+        // Handle withdraw form submission
+        function handleWithdrawSubmit(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            
+            // Validations
+            if (savedPayments.length === 0) {
+                showAlert('error', 'Required', 'Please add at least one payment method');
+                return;
+            }
+            
+            if (amount > userData.balance) {
+                showAlert('error', 'Insufficient Balance', 'Withdrawal amount exceeds your balance');
+                return;
+            }
+            
+            if (amount <= 0) {
+                showAlert('error', 'Invalid Amount', 'Please enter a valid amount');
+                return;
+            }
+            
+            // Show password verification modal
+            showPasswordVerifyModal(amount);
+        }
+
+        // ==================== 📧 টেলিগ্রাম নোটিফিকেশন ফাংশন ====================
+        // 📌 টেলিগ্রাম API এর মাধ্যমে মেসেজ পাঠানোর ফাংশন
+        async function sendTelegramMessage(chatId, messageText, parseMode = 'HTML') {
+            // ডেমো মোডে থাকলে নোটিফিকেশন পাঠাবো না
+            if (BOT_TOKEN === "YOUR_BOT_TOKEN_HERE") {
+                console.log("Demo Mode: Telegram notification would be sent to:", chatId);
+                console.log("Message:", messageText);
+                return true;
+            }
+            
+            try {
+                const response = await fetch(BOT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: messageText,
+                        parse_mode: parseMode
+                    })
+                });
+                
+                const data = await response.json();
+                return data.ok;
+            } catch (error) {
+                console.error('Error sending Telegram message:', error);
+                return false;
+            }
+        }
+
+        // 📌 ইউজার কনফার্মেশন মেসেজ তৈরি করুন
+        function createUserConfirmationMessage(amount, requestId) {
+            return `✅ <b>Withdrawal Request Submitted</b>\n\n` +
+                   `Your withdrawal request of <b>${amount}৳</b> has been successfully submitted.\n\n` +
+                   `<b>Transaction ID:</b> <code>${requestId}</code>\n` +
+                   `<b>Status:</b> Pending Review\n\n` +
+                   `We will process your request shortly. Thank you for your patience.`;
+        }
+
+        // 📌 এডমিন নোটিফিকেশন মেসেজ তৈরি করুন
+        function createAdminNotificationMessage(userData, amount, paymentMethods, requestId) {
+            let paymentMethodsText = paymentMethods.map(p => 
+                `• ${p.method}: <code>${p.number}</code>`
+            ).join('\n');
+            
+            return `🚨 <b>New Withdrawal Request</b>\n\n` +
+                   `<b>User:</b> ${userData.fullName} (@${userData.username})\n` +
+                   `<b>User ID:</b> <code>${userData.chatId}</code>\n` +
+                   `<b>Amount:</b> ${amount}৳\n\n` +
+                   `<b>Payment Methods:</b>\n${paymentMethodsText}\n\n` +
+                   `<b>Transaction ID:</b> <code>${requestId}</code>\n\n` +
+                   `Please review this request as soon as possible.`;
+        }
+
+        // Create withdraw request in Realtime Database
+        function createWithdrawRequest(amount) {
+            const requestId = realtimeDB.ref().child('withdraw_requests').push().key;
+            const timestamp = Date.now();
+            
+            const requestData = {
+                chatId: userData.chatId,
+                username: userData.username,
+                fullName: userData.fullName,
+                amount: amount,
+                paymentMethods: savedPayments,
+                status: "pending",
+                timestamp: timestamp
+            };
+            
+            // Save to Realtime Database
+            realtimeDB.ref('withdraw_requests/' + requestId).set(requestData)
+                .then(() => {
+                    // Send Telegram notifications
+                    sendTelegramNotifications(amount, requestId);
+                    
+                    // Update user balance in Firestore
+                    updateUserBalance(amount, requestId);
+                })
+                .catch((error) => {
+                    console.error('Error saving withdrawal request:', error);
+                    showAlert('error', 'Error', 'Failed to submit withdrawal request');
+                });
+        }
+
+        // ==================== 📧 টেলিগ্রাম নোটিফিকেশন পাঠানো ====================
+        function sendTelegramNotifications(amount, requestId) {
+            // 📌 ইউজারের কাছে confirmation message পাঠান
+            const userMessage = createUserConfirmationMessage(amount, requestId);
+            sendTelegramMessage(userData.chatId, userMessage);
+            
+            // 📌 এডমিন চ্যানেলে notification পাঠান
+            const adminMessage = createAdminNotificationMessage(userData, amount, savedPayments, requestId);
+            sendTelegramMessage(ADMIN_CHANNEL_ID, adminMessage);
+        }
+
+        // Update user balance in Firestore
+        function updateUserBalance(amount, requestId) {
+            const newBalance = userData.balance - amount;
+            const newTotalWithdraw = userData.totalWithdraw + amount;
+            
+            db.collection('users').doc(userData.chatId).update({
+                balance: newBalance,
+                totalWithdraw: newTotalWithdraw
+            })
+            .then(() => {
+                // Update local data
+                userData.balance = newBalance;
+                userData.totalWithdraw = newTotalWithdraw;
+                
+                // Update UI
+                document.getElementById('userBalance').textContent = `${userData.balance} ৳`;
+                document.getElementById('userTotalWithdraw').textContent = `${userData.totalWithdraw} ৳`;
+                
+                showAlert('success', 'Success', 'Withdrawal request submitted successfully!');
+                
+                // Reset form
+                savedPayments = [];
+                renderSavedPayments();
+                document.getElementById('withdrawAmount').value = '';
+                document.getElementById('submitButton').disabled = true;
+                
+                // Reload history
+                loadWithdrawHistory();
+            })
+            .catch((error) => {
+                console.error('Error updating user balance:', error);
+                showAlert('error', 'Error', 'Failed to update balance');
+            });
+        }
+
+        // Show alert function
+        function showAlert(icon, title, message) {
+            Swal.fire({
+                icon: icon,
+                title: title,
+                text: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'mini-alert-popup',
+                    title: 'mini-alert-title',
+                    icon: 'mini-alert-icon'
+                }
+            });
+        }
+    </script>
+</body>
+</html>
